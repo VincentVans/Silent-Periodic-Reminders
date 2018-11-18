@@ -32,10 +32,6 @@ namespace Reminders.Droid
             {
                 return CanVibrateState.Stopped;
             }
-            if (settings.IgnoreIfNightMode && (applicationContext.Resources.Configuration.UiMode.HasFlag(Android.Content.Res.UiMode.NightYes)))
-            {
-                return CanVibrateState.Nightmode;
-            }
             if (settings.IgnoreIfBetweenTimes)
             {
                 var currentTime = Settings.NextAlarm(settings.MostRecentAlarmAttempt, settings.MinutesInterval).TimeOfDay;

@@ -38,8 +38,6 @@ namespace Reminders.Droid
                     return "N/A: Invalid 'minutes between reminders'";
                 case CanVibrateState.Stopped:
                     return "N/A: Haven't started yet";
-                case CanVibrateState.Nightmode:
-                    return "N/A: Night mode is on";
                 case CanVibrateState.Betweentimes:
                     return "N/A: Within excluded period";
                 default:
