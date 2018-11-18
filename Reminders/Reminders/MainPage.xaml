@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Reminders"
+             x:Class="Reminders.MainPage">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <local:EntryToMinutesConverter x:Key="EntryToMinutesConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ScrollView>
+        <StackLayout>
+            <Label Text="Silent periodic reminders" 
+               Font="25"
+               HorizontalOptions="Center"
+               VerticalOptions="Center" />
+            <Label Text="How many minutes between reminders?"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"/>
+            <Entry Placeholder="minutes" Keyboard="Numeric" HorizontalOptions="Center" HorizontalTextAlignment="Center" Text="{Binding Path=MinutesInterval,
+                Converter=EntryToMinutesConverter,
+                Mode=TwoWay}"></Entry>
+            <Label Text="Buzzing duration?"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"/>
+            <Slider x:Name="slider" Maximum="3000" Value="{Binding VibrateLength,
+                Mode=TwoWay}" Minimum="100" />
+            <Label Text="Buzzing strength"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"/>
+            <Slider x:Name="sliderStrength" Maximum="255" Value="{Binding VibrateAmplitude,
+                Mode=TwoWay}" Minimum="1" />
+            <Label Text="Do not bother me: "
+               HorizontalOptions="Center"
+               VerticalOptions="Center"/>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Grid.Row="0" Text="If nightmode is on: " VerticalOptions="Center" Margin="10,0,0,0"/>
+                <Switch x:Name="nightmode" Grid.Column="1" Grid.Row="0" IsToggled="{Binding IgnoreIfNightMode,
+                    Mode=TwoWay}"/>
+                <Label Grid.Column="0" Grid.Row="1" Text="If my phone is on silent: " VerticalOptions="Center" Margin="10,0,0,0"/>
+                <Switch x:Name="silent" Grid.Column="1" Grid.Row="1" IsToggled="{Binding IgnoreIfSilentMode,
+                    Mode=TwoWay}"/>
+                <Label Grid.Column="0" Grid.Row="2" Text="Between the specified times: " VerticalOptions="Center" Margin="10,0,0,0"/>
+                <Switch x:Name="betweenTimes" Grid.Column="1" Grid.Row="2" IsToggled="{Binding IgnoreIfBetweenTimes,
+                    Mode=TwoWay}"/>
+                <TimePicker x:Name="betweenTimeStart" Grid.Column="0" Grid.Row="3" HorizontalOptions="Center" IsEnabled="False" Time="{Binding IgnoreTimeStart,
+                    Mode=TwoWay}"/>
+                <TimePicker x:Name="betweenTimeEnd" Grid.Column="1" Grid.Row="3" HorizontalOptions="Center" IsEnabled="False"  Time="{Binding IgnoreTimeEnd,
+                    Mode=TwoWay}"/>
+            </Grid>
+            <Button x:Name="startButton" Text="Click to start" Clicked="Button_Clicked"/>
+            <Label Text="Next reminder:" HorizontalOptions="Center" VerticalOptions="Center"/>
+            <Label x:Name="nextReminderLabel" Text="" HorizontalOptions="Center" VerticalOptions="Center"/>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>
