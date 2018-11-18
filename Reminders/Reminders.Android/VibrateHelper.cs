@@ -44,10 +44,6 @@ namespace Reminders.Droid
             {
                 return CanVibrateState.Nightmode;
             }
-            if (settings.IgnoreIfSilentMode && ((AudioManager)applicationContext.GetSystemService(Context.AudioService)).RingerMode == RingerMode.Silent)
-            {
-                return CanVibrateState.Silentmode;
-            }
             if (settings.IgnoreIfBetweenTimes)
             {
                 var currentTime = settings.NextAlarm.TimeOfDay;

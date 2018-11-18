@@ -46,9 +46,6 @@
                 <Label Grid.Column="0" Grid.Row="0" Text="If nightmode is on: " VerticalOptions="Center" Margin="10,0,0,0"/>
                 <Switch x:Name="nightmode" Grid.Column="1" Grid.Row="0" IsToggled="{Binding IgnoreIfNightMode,
                     Mode=TwoWay}"/>
-                <Label Grid.Column="0" Grid.Row="1" Text="If my phone is on silent: " VerticalOptions="Center" Margin="10,0,0,0"/>
-                <Switch x:Name="silent" Grid.Column="1" Grid.Row="1" IsToggled="{Binding IgnoreIfSilentMode,
-                    Mode=TwoWay}"/>
                 <Label Grid.Column="0" Grid.Row="2" Text="Between the specified times: " VerticalOptions="Center" Margin="10,0,0,0"/>
                 <Switch x:Name="betweenTimes" Grid.Column="1" Grid.Row="2" IsToggled="{Binding IgnoreIfBetweenTimes,
                     Mode=TwoWay}"/>

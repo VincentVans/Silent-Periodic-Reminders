@@ -58,7 +58,6 @@ namespace Reminders
         InvalidInterval,
         Stopped,
         Nightmode,
-        Silentmode,
         Betweentimes,
     }
 
@@ -69,7 +68,6 @@ namespace Reminders
         double vibrateLength;
         double vibrateAmplitude;
         bool ignoreIfNightMode;
-        bool ignoreIfSilentMode;
         bool ignoreIfBetweenTimes;
         TimeSpan ignoreTimeStart;
         TimeSpan ignoreTimeEnd;
@@ -84,7 +82,6 @@ namespace Reminders
             VibrateLength = GetDictionaryEntry(dictionary, nameof(VibrateLength), 700.0);
             VibrateAmplitude = GetDictionaryEntry(dictionary, nameof(VibrateAmplitude), 128.0);
             IgnoreIfNightMode = GetDictionaryEntry(dictionary, nameof(IgnoreIfNightMode), true);
-            IgnoreIfSilentMode = GetDictionaryEntry(dictionary, nameof(IgnoreIfSilentMode), true);
             IgnoreIfBetweenTimes = GetDictionaryEntry(dictionary, nameof(IgnoreIfBetweenTimes), false);
             IgnoreTimeStart = GetDictionaryEntry(dictionary, nameof(IgnoreTimeStart), new TimeSpan(22, 0, 0));
             IgnoreTimeEnd = GetDictionaryEntry(dictionary, nameof(IgnoreTimeEnd), new TimeSpan(8, 0, 0));
@@ -133,12 +130,6 @@ namespace Reminders
             get { return ignoreIfNightMode; }
         }
 
-        public bool IgnoreIfSilentMode
-        {
-            set { SetProperty(ref ignoreIfSilentMode, value); }
-            get { return ignoreIfSilentMode; }
-        }
-
         public bool IgnoreIfBetweenTimes
         {
             set { SetProperty(ref ignoreIfBetweenTimes, value); }
@@ -163,7 +154,6 @@ namespace Reminders
             dictionary[nameof(VibrateLength)] = VibrateLength;
             dictionary[nameof(VibrateAmplitude)] = VibrateAmplitude;
             dictionary[nameof(IgnoreIfNightMode)] = IgnoreIfNightMode;
-            dictionary[nameof(IgnoreIfSilentMode)] = IgnoreIfSilentMode;
             dictionary[nameof(IgnoreIfBetweenTimes)] = IgnoreIfBetweenTimes;
             dictionary[nameof(IgnoreTimeStart)] = IgnoreTimeStart;
             dictionary[nameof(IgnoreTimeEnd)] = IgnoreTimeEnd;
