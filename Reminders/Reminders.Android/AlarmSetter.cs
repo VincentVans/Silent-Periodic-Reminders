@@ -6,9 +6,10 @@ using System;
 [assembly: Xamarin.Forms.Dependency(typeof(AlarmSetter))]
 namespace Reminders.Droid
 {
-    public class AlarmSetter : ISetAlarm
+    public sealed class AlarmSetter : ISetAlarm
     {
         internal const int alarmRequestCode = 0;
+        internal const string settingsKey = "settings";
 
         //TODO Switch to localBroadcastManager if you can get it working
         public void SetAlarm()
@@ -17,7 +18,7 @@ namespace Reminders.Droid
             var pIntent = PendingIntent.GetBroadcast(Application.Context, alarmRequestCode, ReminderIntent(Application.Context), PendingIntentFlags.UpdateCurrent);
             var intervalMillis = ((App)App.Current).Settings.MinutesInterval * 60000L;
             am.SetInexactRepeating(AlarmType.ElapsedRealtimeWakeup, intervalMillis, intervalMillis, pIntent);
-            ((App)App.Current).Settings.MostRecentAlarmAttempt = DateTime.UtcNow;
+            ((App)App.Current).Settings.MostRecentAlarmAttempt = DateTime.Now;
         }
 
         public void CancelAlarm()
@@ -30,7 +31,8 @@ namespace Reminders.Droid
 
         public string NextAlarm()
         {
-            switch (VibrateHelper.CanVibrate(Application.Context))
+            //TODO Kinda lame to serialize and deserialize, but whatever.
+            switch (VibrateHelper.CanVibrate(Application.Context, Settings.FromSerializeString(((App)App.Current).Settings.ToSerializeString())))
             {
                 case CanVibrateState.InvalidInterval:
                     return "N/A: Invalid 'minutes between reminders'";
@@ -47,20 +49,31 @@ namespace Reminders.Droid
 
         private static Intent ReminderIntent(Context applicationContext)
         {
-            return new Intent(applicationContext, typeof(ReminderBroadcastReceiver));
+            var intent = new Intent(applicationContext, typeof(ReminderBroadcastReceiver));
+            intent.PutExtra(settingsKey, ((App)App.Current).Settings.ToSerializeString());
+            return intent;
+        }
+    }
+
+    [BroadcastReceiver(Enabled = true, Process = ":remote")]
+    public sealed class ReminderBroadcastReceiver : BroadcastReceiver
+    {
+        public override void OnReceive(Context context, Intent intent)
+        {
+            var s = Settings.FromSerializeString(intent.GetStringExtra(AlarmSetter.settingsKey));
+            if (VibrateHelper.CanVibrate(context, s) == CanVibrateState.Yes)
+            {
+                VibrateHelper.Vibrate(context, s.VibrateLength);
+            }
         }
     }
 
     [BroadcastReceiver(Enabled = true)]
-    public class ReminderBroadcastReceiver : BroadcastReceiver
+    public sealed class UpdateReminderLabelBroadcastReceiver : BroadcastReceiver
     {
         public override void OnReceive(Context context, Intent intent)
         {
-            ((App)App.Current).Settings.MostRecentAlarmAttempt = DateTime.UtcNow;
-            if (VibrateHelper.CanVibrate(context) == CanVibrateState.Yes)
-            {
-                VibrateHelper.Vibrate(context);
-            }
+            ((App)App.Current).Settings.MostRecentAlarmAttempt = DateTime.Now;
         }
     }
 }

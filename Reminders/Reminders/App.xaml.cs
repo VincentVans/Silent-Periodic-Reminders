@@ -22,7 +22,7 @@ namespace Reminders
 
         protected override void OnStart()
         {
-            // Handle when your app starts
+            ((MainPage)MainPage).SyncToSettings();
         }
 
         protected override void OnSleep()
@@ -33,7 +33,7 @@ namespace Reminders
 
         protected override void OnResume()
         {
-            // Handle when your app resumes
+            ((MainPage)MainPage).SyncToSettings();
         }
 
         public SettingsViewModel Settings { private set; get; }
@@ -49,7 +49,6 @@ namespace Reminders
     public interface IVibrate
     {
         void Vibrate();
-        CanVibrateState CanVibrate();
     }
 
     public enum CanVibrateState
@@ -61,7 +60,7 @@ namespace Reminders
         Betweentimes,
     }
 
-    public class SettingsViewModel : INotifyPropertyChanged
+    public sealed class SettingsViewModel : INotifyPropertyChanged
     {
         bool on;
         int minutesInterval;
@@ -70,7 +69,7 @@ namespace Reminders
         bool ignoreIfBetweenTimes;
         TimeSpan ignoreTimeStart;
         TimeSpan ignoreTimeEnd;
-        internal DateTime mostRecentAlarmAttempt;
+        DateTime mostRecentAlarmAttempt;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -84,6 +83,20 @@ namespace Reminders
             IgnoreTimeStart = GetDictionaryEntry(dictionary, nameof(IgnoreTimeStart), new TimeSpan(22, 0, 0));
             IgnoreTimeEnd = GetDictionaryEntry(dictionary, nameof(IgnoreTimeEnd), new TimeSpan(8, 0, 0));
             MostRecentAlarmAttempt = GetDictionaryEntry(dictionary, nameof(MostRecentAlarmAttempt), DateTime.UtcNow);
+        }
+
+        internal string ToSerializeString()
+        {
+            return string.Join(";",
+                on ? "1" : "0",
+                minutesInterval.ToString(CultureInfo.InvariantCulture),
+                (Convert.ToInt32(Math.Round(vibrateLength))).ToString(CultureInfo.InvariantCulture),
+                ignoreIfNightMode ? "1" : "0",
+                ignoreIfBetweenTimes ? "1" : "0",
+                ignoreTimeStart.Ticks.ToString(CultureInfo.InvariantCulture),
+                ignoreTimeEnd.Ticks.ToString(CultureInfo.InvariantCulture),
+                mostRecentAlarmAttempt.Ticks.ToString(CultureInfo.InvariantCulture)
+                );
         }
 
         public bool On
@@ -136,7 +149,10 @@ namespace Reminders
 
         public DateTime NextAlarm
         {
-            get { return MostRecentAlarmAttempt.ToLocalTime().AddMinutes(MinutesInterval); }
+            get
+            {
+                return Settings.NextAlarm(MostRecentAlarmAttempt, MinutesInterval);
+            }
         }
 
         public void SaveState(IDictionary<string, object> dictionary)
@@ -166,13 +182,13 @@ namespace Reminders
             return true;
         }
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
-    internal class EntryToMinutesConverter : IValueConverter
+    internal sealed class EntryToMinutesConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -182,6 +198,69 @@ namespace Reminders
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return ((int)value).ToString(CultureInfo.InvariantCulture);
+        }
+    }
+
+    internal sealed class Settings
+    {
+        internal readonly bool On;
+        internal readonly int MinutesInterval;
+        internal readonly int VibrateLength;
+        internal readonly bool IgnoreIfNightMode;
+        internal readonly bool IgnoreIfBetweenTimes;
+        internal readonly TimeSpan IgnoreTimeStart;
+        internal readonly TimeSpan IgnoreTimeEnd;
+        internal readonly DateTime MostRecentAlarmAttempt;
+
+        internal static DateTime NextAlarm(DateTime mostRecentAlarmAttempt, int minutesInterval)
+        {
+            var currentTime = DateTime.Now.ToLocalTime();
+            if (mostRecentAlarmAttempt < currentTime && minutesInterval > 0)
+            {
+                while (mostRecentAlarmAttempt < currentTime)
+                {
+                    mostRecentAlarmAttempt = mostRecentAlarmAttempt.AddMinutes(minutesInterval);
+                }
+            }
+            return mostRecentAlarmAttempt;
+        }
+
+        internal static Settings FromSerializeString(string str)
+        {
+            var split = str.Split(';');
+            return new Settings(parseBool(split[0]),
+                int.Parse(split[1]),
+                int.Parse(split[2]),
+                parseBool(split[3]),
+                parseBool(split[4]),
+                TimeSpan.FromTicks(long.Parse(split[5])),
+                TimeSpan.FromTicks(long.Parse(split[6])),
+                new DateTime(long.Parse(split[7])));
+        }
+
+        private static bool parseBool(string str)
+        {
+            return str == "1";
+        }
+
+        private Settings(
+            bool on,
+            int minutesInterval,
+            int vibrateLength,
+            bool ignoreIfNightMode,
+            bool ignoreIfBetweenTimes,
+            TimeSpan ignoreTimeStart,
+            TimeSpan ignoreTimeEnd,
+            DateTime mostRecentAlarmAttempt)
+        {
+            On = on;
+            MinutesInterval = minutesInterval;
+            VibrateLength = vibrateLength;
+            IgnoreIfNightMode = ignoreIfNightMode;
+            IgnoreIfBetweenTimes = ignoreIfBetweenTimes;
+            IgnoreTimeStart = ignoreTimeStart;
+            IgnoreTimeEnd = ignoreTimeEnd;
+            MostRecentAlarmAttempt = mostRecentAlarmAttempt;
         }
     }
 }

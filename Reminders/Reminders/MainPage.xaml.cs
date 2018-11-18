@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using Xamarin.Forms;
 
 namespace Reminders
@@ -23,19 +18,8 @@ namespace Reminders
             var settings = ((App)App.Current).Settings;
             switch (e.PropertyName)
             {
-                case nameof(settings.On):
-                    if (settings.On)
-                    {
-                        DependencyService.Get<ISetAlarm>().SetAlarm();
-                    }
-                    else
-                    {
-                        DependencyService.Get<ISetAlarm>().CancelAlarm();
-                    }
-                    break;
-                case nameof(settings.MinutesInterval):
-                    DependencyService.Get<ISetAlarm>().SetAlarm();
-                    break;
+                case nameof(settings.MostRecentAlarmAttempt):
+                    return;
                 case nameof(settings.VibrateLength):
                     DependencyService.Get<IVibrate>().Vibrate();
                     break;
@@ -45,10 +29,19 @@ namespace Reminders
             SyncToSettings();
         }
 
-        private void SyncToSettings()
+        internal void SyncToSettings()
         {
             var settings = ((App)App.Current).Settings;
-            startButton.Text = settings.On ? "Click to stop" : "Click to start";
+            if (settings.On)
+            {
+                startButton.Text = "Click to stop";
+                DependencyService.Get<ISetAlarm>().SetAlarm();
+            }
+            else
+            {
+                startButton.Text = "Click to start";
+                DependencyService.Get<ISetAlarm>().CancelAlarm();
+            }
             betweenTimeStart.IsEnabled = settings.IgnoreIfBetweenTimes;
             betweenTimeEnd.IsEnabled = settings.IgnoreIfBetweenTimes;
             nextReminderLabel.Text = DependencyService.Get<ISetAlarm>().NextAlarm();

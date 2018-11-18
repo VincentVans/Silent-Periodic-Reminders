@@ -1,11 +1,6 @@
 ﻿using Android.App;
-using Android.Content;
 using Android.Content.PM;
-using Android.Media;
 using Android.OS;
-using Android.Support.V7.App;
-using Reminders.Droid;
-using System;
 
 namespace Reminders.Droid
 {
@@ -22,9 +17,6 @@ namespace Reminders.Droid
             global::Xamarin.Forms.Forms.Init(this, bundle);
             LoadApplication(new App());
         }
-
-        //  AppCompatDelegate.DefaultNightMode = AppCompatDelegate.ModeNightAuto;
-
     }
 }
 

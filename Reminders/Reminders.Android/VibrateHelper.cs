@@ -1,6 +1,5 @@
 ﻿using Android.App;
 using Android.Content;
-using Android.Media;
 using Android.OS;
 using Reminders.Droid;
 using System;
@@ -8,29 +7,23 @@ using System;
 [assembly: Xamarin.Forms.Dependency(typeof(VibrateHelper))]
 namespace Reminders.Droid
 {
-    class VibrateHelper: IVibrate
+    sealed class VibrateHelper : IVibrate
     {
         void IVibrate.Vibrate()
         {
-            Vibrate(Application.Context);
-        }
-
-        CanVibrateState IVibrate.CanVibrate()
-        {
-            return CanVibrate(Application.Context);
-        }
-
-        internal static void Vibrate(Context applicationContext)
-        {
             var settings = ((App)App.Current).Settings;
             var milliseconds = Convert.ToInt32(Math.Round(settings.VibrateLength));
+            Vibrate(Application.Context, milliseconds);
+        }
+
+        internal static void Vibrate(Context applicationContext, int milliseconds)
+        {
             var v = (Vibrator)applicationContext.GetSystemService(Context.VibratorService);
             v.Vibrate(VibrationEffect.CreateOneShot(milliseconds, VibrationEffect.DefaultAmplitude));
         }
 
-        internal static CanVibrateState CanVibrate(Context applicationContext)
+        internal static CanVibrateState CanVibrate(Context applicationContext, Settings settings)
         {
-            var settings = ((App)App.Current)?.Settings;
             if (settings.MinutesInterval <= 0)
             {
                 return CanVibrateState.InvalidInterval;
@@ -45,14 +38,14 @@ namespace Reminders.Droid
             }
             if (settings.IgnoreIfBetweenTimes)
             {
-                var currentTime = settings.NextAlarm.TimeOfDay;
+                var currentTime = Settings.NextAlarm(settings.MostRecentAlarmAttempt, settings.MinutesInterval).TimeOfDay;
                 if (((settings.IgnoreTimeStart > settings.IgnoreTimeEnd)
                         && ((currentTime > settings.IgnoreTimeStart && currentTime <= TimeSpan.MaxValue)
                             || (currentTime >= TimeSpan.MinValue && currentTime < settings.IgnoreTimeEnd)))
                     || (currentTime > settings.IgnoreTimeStart && currentTime < settings.IgnoreTimeEnd))
-                    {
-                        return CanVibrateState.Betweentimes;
-                    }
+                {
+                    return CanVibrateState.Betweentimes;
+                }
             }
             return CanVibrateState.Yes;
         }
