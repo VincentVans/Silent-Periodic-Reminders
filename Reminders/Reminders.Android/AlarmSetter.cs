@@ -63,6 +63,12 @@ namespace Reminders.Droid
             {
                 VibrateHelper.Vibrate(context, s.VibrateLength);
             }
+            context.SendBroadcast(UpdateReminderIntent(context));
+        }
+
+        private static Intent UpdateReminderIntent(Context applicationContext)
+        {
+            return new Intent(applicationContext, typeof(UpdateReminderLabelBroadcastReceiver));
         }
     }
 
@@ -72,6 +78,7 @@ namespace Reminders.Droid
         public override void OnReceive(Context context, Intent intent)
         {
             ((App)App.Current).Settings.MostRecentAlarmAttempt = DateTime.Now;
+            ((MainPage)App.Current.MainPage).SyncToSettings();
         }
     }
 }
