@@ -66,7 +66,6 @@ namespace Reminders
         bool on;
         int minutesInterval;
         double vibrateLength;
-        double vibrateAmplitude;
         bool ignoreIfNightMode;
         bool ignoreIfBetweenTimes;
         TimeSpan ignoreTimeStart;
@@ -80,7 +79,6 @@ namespace Reminders
             On = GetDictionaryEntry(dictionary, nameof(On), false);
             MinutesInterval = GetDictionaryEntry(dictionary, nameof(MinutesInterval), 15);
             VibrateLength = GetDictionaryEntry(dictionary, nameof(VibrateLength), 700.0);
-            VibrateAmplitude = GetDictionaryEntry(dictionary, nameof(VibrateAmplitude), 128.0);
             IgnoreIfNightMode = GetDictionaryEntry(dictionary, nameof(IgnoreIfNightMode), true);
             IgnoreIfBetweenTimes = GetDictionaryEntry(dictionary, nameof(IgnoreIfBetweenTimes), false);
             IgnoreTimeStart = GetDictionaryEntry(dictionary, nameof(IgnoreTimeStart), new TimeSpan(22, 0, 0));
@@ -104,12 +102,6 @@ namespace Reminders
         {
             set { SetProperty(ref vibrateLength, value); }
             get { return vibrateLength; }
-        }
-
-        public double VibrateAmplitude
-        {
-            set { SetProperty(ref vibrateAmplitude, value); }
-            get { return vibrateAmplitude; }
         }
 
         public TimeSpan IgnoreTimeStart
@@ -152,7 +144,6 @@ namespace Reminders
             dictionary[nameof(On)] = On;
             dictionary[nameof(MinutesInterval)] = MinutesInterval;
             dictionary[nameof(VibrateLength)] = VibrateLength;
-            dictionary[nameof(VibrateAmplitude)] = VibrateAmplitude;
             dictionary[nameof(IgnoreIfNightMode)] = IgnoreIfNightMode;
             dictionary[nameof(IgnoreIfBetweenTimes)] = IgnoreIfBetweenTimes;
             dictionary[nameof(IgnoreTimeStart)] = IgnoreTimeStart;

@@ -24,9 +24,8 @@ namespace Reminders.Droid
         {
             var settings = ((App)App.Current).Settings;
             var milliseconds = Convert.ToInt32(Math.Round(settings.VibrateLength));
-            var amplitude = Convert.ToInt32(Math.Round(settings.VibrateAmplitude));
             var v = (Vibrator)applicationContext.GetSystemService(Context.VibratorService);
-            v.Vibrate(VibrationEffect.CreateOneShot(milliseconds, amplitude));
+            v.Vibrate(VibrationEffect.CreateOneShot(milliseconds, VibrationEffect.DefaultAmplitude));
         }
 
         internal static CanVibrateState CanVibrate(Context applicationContext)

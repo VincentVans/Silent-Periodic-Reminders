@@ -25,11 +25,6 @@
                VerticalOptions="Center"/>
             <Slider x:Name="slider" Maximum="3000" Value="{Binding VibrateLength,
                 Mode=TwoWay}" Minimum="100" />
-            <Label Text="Buzzing strength"
-               HorizontalOptions="Center"
-               VerticalOptions="Center"/>
-            <Slider x:Name="sliderStrength" Maximum="255" Value="{Binding VibrateAmplitude,
-                Mode=TwoWay}" Minimum="1" />
             <Label Text="Do not bother me: "
                HorizontalOptions="Center"
                VerticalOptions="Center"/>

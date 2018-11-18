@@ -37,7 +37,6 @@ namespace Reminders
                     DependencyService.Get<ISetAlarm>().SetAlarm();
                     break;
                 case nameof(settings.VibrateLength):
-                case nameof(settings.VibrateAmplitude):
                     DependencyService.Get<IVibrate>().Vibrate();
                     break;
                 default:
