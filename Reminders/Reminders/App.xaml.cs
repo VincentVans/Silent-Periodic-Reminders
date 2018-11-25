@@ -74,7 +74,7 @@ namespace Reminders
         public SettingsViewModel(IDictionary<string, object> dictionary)
         {
             On = GetDictionaryEntry(dictionary, nameof(On), false);
-            MinutesInterval = GetDictionaryEntry(dictionary, nameof(MinutesInterval), 15);
+            MinutesInterval = Math.Max(Settings.minimumInterval, GetDictionaryEntry(dictionary, nameof(MinutesInterval), 15));
             VibrateLength = GetDictionaryEntry(dictionary, nameof(VibrateLength), 700.0);
             IgnoreIfBetweenTimes = GetDictionaryEntry(dictionary, nameof(IgnoreIfBetweenTimes), false);
             IgnoreTimeStart = GetDictionaryEntry(dictionary, nameof(IgnoreTimeStart), new TimeSpan(22, 0, 0));
@@ -192,6 +192,7 @@ namespace Reminders
 
     internal sealed class Settings
     {
+        internal const int minimumInterval = 10;
         internal readonly bool On;
         internal readonly int MinutesInterval;
         internal readonly int VibrateLength;
@@ -203,7 +204,7 @@ namespace Reminders
         internal static DateTime NextAlarm(DateTime mostRecentAlarmAttempt, int minutesInterval)
         {
             var currentTime = DateTime.Now.ToLocalTime();
-            if (mostRecentAlarmAttempt < currentTime && minutesInterval > 0)
+            if (mostRecentAlarmAttempt < currentTime && minutesInterval > minimumInterval)
             {
                 while (mostRecentAlarmAttempt < currentTime)
                 {

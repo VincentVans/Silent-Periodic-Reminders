@@ -19,6 +19,7 @@ namespace Reminders
             switch (e.PropertyName)
             {
                 case nameof(settings.MostRecentAlarmAttempt):
+                    nextReminderLabel.Text = DependencyService.Get<ISetAlarm>().NextAlarm();
                     return;
                 case nameof(settings.VibrateLength):
                     DependencyService.Get<IVibrate>().Vibrate();

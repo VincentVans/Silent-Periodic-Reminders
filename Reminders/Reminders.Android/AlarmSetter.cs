@@ -1,5 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
+using Android.OS;
 using Reminders.Droid;
 using System;
 
@@ -11,20 +12,35 @@ namespace Reminders.Droid
         internal const int alarmRequestCode = 0;
         internal const string settingsKey = "settings";
 
-        //TODO Switch to localBroadcastManager if you can get it working
         public void SetAlarm()
         {
-            var am = (AlarmManager)Application.Context.GetSystemService(Context.AlarmService);
-            var pIntent = PendingIntent.GetBroadcast(Application.Context, alarmRequestCode, ReminderIntent(Application.Context), PendingIntentFlags.UpdateCurrent);
-            var intervalMillis = ((App)App.Current).Settings.MinutesInterval * 60000L;
-            am.SetInexactRepeating(AlarmType.ElapsedRealtimeWakeup, intervalMillis, intervalMillis, pIntent);
-            ((App)App.Current).Settings.MostRecentAlarmAttempt = DateTime.Now;
+            ((App)App.Current).Settings.MostRecentAlarmAttempt = SetAlarm(Application.Context, ((App)App.Current).Settings.ToSerializeString(), ((App)App.Current).Settings.MinutesInterval);
+        } 
+
+        //TODO Switch to localBroadcastManager if you can get it working
+        public static DateTime SetAlarm(Context context, string serializedSettings, int minutesInterval)
+        {
+            if (minutesInterval >= Settings.minimumInterval)
+            {
+                var am = (AlarmManager)context.GetSystemService(Context.AlarmService);
+                var pIntent = PendingIntent.GetBroadcast(context, alarmRequestCode, ReminderIntent(context, serializedSettings), PendingIntentFlags.UpdateCurrent);
+                var intervalMillis = SystemClock.ElapsedRealtime() + (minutesInterval * 60000L);
+                if (Build.VERSION.SdkInt >= BuildVersionCodes.M)
+                {
+                    am.SetExactAndAllowWhileIdle(AlarmType.ElapsedRealtimeWakeup, intervalMillis, pIntent);
+                }
+                else
+                {
+                    am.SetExact(AlarmType.ElapsedRealtimeWakeup, intervalMillis, pIntent);
+                }
+            }
+            return DateTime.Now;
         }
 
         public void CancelAlarm()
         {
             var am = (AlarmManager)Application.Context.GetSystemService(Context.AlarmService);
-            var pIntent = PendingIntent.GetBroadcast(Application.Context, alarmRequestCode, ReminderIntent(Application.Context), PendingIntentFlags.CancelCurrent);
+            var pIntent = PendingIntent.GetBroadcast(Application.Context, alarmRequestCode, ReminderIntent(Application.Context, ((App)App.Current).Settings.ToSerializeString()), PendingIntentFlags.CancelCurrent);
             am.Cancel(pIntent);
             pIntent.Cancel();
         }
@@ -35,7 +51,7 @@ namespace Reminders.Droid
             switch (VibrateHelper.CanVibrate(Application.Context, Settings.FromSerializeString(((App)App.Current).Settings.ToSerializeString())))
             {
                 case CanVibrateState.InvalidInterval:
-                    return "N/A: Invalid 'minutes between reminders'";
+                    return "N/A: Invalid 'minutes between reminders': must be a whole number, at least " + Settings.minimumInterval;
                 case CanVibrateState.Stopped:
                     return "N/A: Haven't started yet";
                 case CanVibrateState.Betweentimes:
@@ -45,10 +61,10 @@ namespace Reminders.Droid
             }
         }
 
-        private static Intent ReminderIntent(Context applicationContext)
+        private static Intent ReminderIntent(Context applicationContext, string serializedSettings)
         {
             var intent = new Intent(applicationContext, typeof(ReminderBroadcastReceiver));
-            intent.PutExtra(settingsKey, ((App)App.Current).Settings.ToSerializeString());
+            intent.PutExtra(settingsKey, serializedSettings);
             return intent;
         }
     }
@@ -58,7 +74,9 @@ namespace Reminders.Droid
     {
         public override void OnReceive(Context context, Intent intent)
         {
-            var s = Settings.FromSerializeString(intent.GetStringExtra(AlarmSetter.settingsKey));
+            var serialized = intent.GetStringExtra(AlarmSetter.settingsKey);
+            var s = Settings.FromSerializeString(serialized);
+            AlarmSetter.SetAlarm(context, serialized, s.MinutesInterval);
             if (VibrateHelper.CanVibrate(context, s) == CanVibrateState.Yes)
             {
                 VibrateHelper.Vibrate(context, s.VibrateLength);
@@ -78,7 +96,6 @@ namespace Reminders.Droid
         public override void OnReceive(Context context, Intent intent)
         {
             ((App)App.Current).Settings.MostRecentAlarmAttempt = DateTime.Now;
-            ((MainPage)App.Current.MainPage).SyncToSettings();
         }
     }
 }

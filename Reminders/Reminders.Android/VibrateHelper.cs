@@ -19,12 +19,20 @@ namespace Reminders.Droid
         internal static void Vibrate(Context applicationContext, int milliseconds)
         {
             var v = (Vibrator)applicationContext.GetSystemService(Context.VibratorService);
-            v.Vibrate(VibrationEffect.CreateOneShot(milliseconds, VibrationEffect.DefaultAmplitude));
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+            {
+                v.Vibrate(VibrationEffect.CreateOneShot(milliseconds, VibrationEffect.DefaultAmplitude));
+            }
+            else
+            {
+                v.Vibrate(milliseconds);
+            }
+            //Android.Widget.Toast.MakeText(applicationContext, "Vibrating", Android.Widget.ToastLength.Short).Show();
         }
 
         internal static CanVibrateState CanVibrate(Context applicationContext, Settings settings)
         {
-            if (settings.MinutesInterval <= 0)
+            if (settings.MinutesInterval < Settings.minimumInterval)
             {
                 return CanVibrateState.InvalidInterval;
             }
